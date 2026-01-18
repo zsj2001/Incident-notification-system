@@ -1,0 +1,455 @@
+{
+  "name": "Incident Notification System_JeffTeo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "https://jeffteosj.app.n8n.cloud/webhook-test/incident-alert",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2624,
+        368
+      ],
+      "id": "18b99ea8-dd18-490a-bb52-c9939d55a7e7",
+      "name": "Webhook",
+      "webhookId": "b51ba8ae-6c2b-4dc8-8662-a41aa9917684"
+    },
+    {
+      "parameters": {
+        "sendTo": "jeffteosj@gmail.com",
+        "subject": "=[{{ $json.Severity }}]  {{ $json.Title }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px;\">   <h2 style=\"color: #d32f2f;\">Incident Alert</h2>      <table style=\"width: 100%; border-collapse: collapse;\">     <tr>       <td style=\"padding: 8px; font-weight: bold;\">Incident ID:</td>       <td style=\"padding: 8px;\">{{ $json[\"Incident ID\"] }}</td>     </tr>     <tr>       <td style=\"padding: 8px; font-weight: bold;\">Title:</td>       <td style=\"padding: 8px;\">{{ $json.Title }}</td>     </tr>     <tr>       <td style=\"padding: 8px; font-weight: bold;\">Severity:</td>       <td style=\"padding: 8px;\">         <span style=\"background: #ff5252; color: white; padding: 4px 8px; border-radius: 4px;\">           {{ $json.Severity }}         </span>       </td>     </tr>     <tr>       <td style=\"padding: 8px; font-weight: bold;\">AI Assessment:</td>       <td style=\"padding: 8px;\">{{ $json[\"AI Severity\"] }}</td>     </tr>     <tr>       <td style=\"padding: 8px; font-weight: bold;\">System:</td>       <td style=\"padding: 8px;\">{{ $json.System }}</td>     </tr>   </table>    <h3>AI Recommendations:</h3>   <ul>     {{ $json.Recommendation }}   </ul>    <p><strong>Impact:</strong> {{ $json.Impact }}</p>      <p style=\"color: #666; font-size: 12px;\">     Timestamp: {{ $json.Timestamp }}   </p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1680,
+        416
+      ],
+      "id": "b4cf7ac4-5a7c-48a1-a9e2-d4394a32802f",
+      "name": "Send a message",
+      "webhookId": "ac2f5138-422c-4802-94c7-7f6fc4982f43",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9guXcProxuTHmSn5",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "842876f9-fbb9-40d3-b1ce-f3ecc5a43666",
+              "name": "incident_id",
+              "value": "={{ $json.incident_id }}",
+              "type": "string"
+            },
+            {
+              "id": "cf315e42-0a53-4ad6-a157-6bf61ed5ceb3",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "41b4c011-742d-40d4-bc6e-f94c6818c5ef",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "9cd783f9-7505-4a7c-a7ad-61ac1cd598c3",
+              "name": "severity",
+              "value": "={{ $json.severity }}",
+              "type": "string"
+            },
+            {
+              "id": "fa42db08-7929-4428-8d8b-003672c19ab0",
+              "name": "affected_system",
+              "value": "={{ $json.affected_system }}",
+              "type": "string"
+            },
+            {
+              "id": "0a3d9068-d34c-4922-a48a-c4725c9394ce",
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "888b8880-b506-4f72-8fbb-f385f85bf5b0",
+              "name": "cpu_usage",
+              "value": "={{ $json.metrics.cpu_usage }}",
+              "type": "string"
+            },
+            {
+              "id": "5855ff38-5313-40ab-a0df-9e3427634eaa",
+              "name": "memory_usage",
+              "value": "={{ $json.metrics.memory_usage }}",
+              "type": "string"
+            },
+            {
+              "id": "fbb98011-e92f-498d-a89c-ce5383838959",
+              "name": "received_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "572bc3fa-d6ed-415d-a106-c1abb73c031c",
+              "name": "status",
+              "value": "open",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2416,
+        368
+      ],
+      "id": "973ac314-3c42-499d-a87d-d6555096d03d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analyze this incident and provide:\n1. Severity assessment (Critical/High/Medium/Low)\n2. Immediate action recommendations\n3. Estimated impact\n\nIncident Details:\n- Title: {{ $json.title }}\n- Description: {{ $json.description }}\n- Affected System: {{ $json.affected_system }}\n- CPU: {{ $json.cpu_usage }}\n- Memory: {{ $json.memory_usage }}\n\nRespond in JSON format:\n{\n  \"ai_severity\": \"string\",\n  \"recommended_actions\": [\"action1\", \"action2\"],\n  \"impact_assessment\": \"string\",\n  \"urgency_score\": 1-10\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2208,
+        368
+      ],
+      "id": "a9a3a19a-46ec-4034-9efd-04b27d8aef3e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "2dnQ6ixT0ur2wSfb",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cp0PCc-CyJjyOGYL9o98adjFfq4iCdvSnhhwCCQZkr4",
+          "mode": "list",
+          "cachedResultName": "Incident Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cp0PCc-CyJjyOGYL9o98adjFfq4iCdvSnhhwCCQZkr4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cp0PCc-CyJjyOGYL9o98adjFfq4iCdvSnhhwCCQZkr4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Incident ID": "{{ $json.incident_id }}",
+            "Timestamp": "{{ $json.timestamp }}",
+            "Title": "{{ $json.title }}",
+            "Description": "{{ $json.description }}",
+            "Severity": "{{ $json.severity }}",
+            "AI Severity": "{{ $json.ai_severity }}",
+            "System": "{{ $json.affected_system }}",
+            "CPU": "{{ $json.cpu_usage }}",
+            "Memory": "{{ $json.memory_usage }}",
+            "Status": "{{ $json.status }}",
+            "Recommendation": "{{ $json.recommended_actions.join('; ') }}",
+            "Impact": "{{ $json.impact_assessment }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Incident ID",
+              "displayName": "Incident ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Severity",
+              "displayName": "Severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Severity",
+              "displayName": "AI Severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "System",
+              "displayName": "System",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CPU",
+              "displayName": "CPU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Memory",
+              "displayName": "Memory",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Impact",
+              "displayName": "Impact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1888,
+        368
+      ],
+      "id": "2de57194-9914-43f3-8c66-bcc741dcc851",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KmVsj51YjrLrb2Xx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09MRV7K3MZ",
+          "mode": "list",
+          "cachedResultName": "all-jeff"
+        },
+        "text": "={   \"blocks\": [     {       \"type\": \"header\",       \"text\": {         \"type\": \"plain_text\",         \"text\": \"🚨 {{ $json.Severity }} Incident\"       }     },     {       \"type\": \"section\",       \"fields\": [         {           \"type\": \"mrkdwn\",           \"text\": \"*Incident ID:*\\n{{ $json[\"Incident ID\"] }}\"         },         {           \"type\": \"mrkdwn\",           \"text\": \"*System:*\\n{{ $json.System }}\"         },         {           \"type\": \"mrkdwn\",           \"text\": \"*Severity:*\\n{{ $json.Severity }}\"         },              {       \"type\": \"section\",       \"text\": {         \"type\": \"mrkdwn\",         \"text\": \"*Description:*\\n{{ $json.Description }}\"       }     },     {       \"type\": \"section\",       \"text\": {         \"type\": \"mrkdwn\",         \"text\": \"*AI Recommendations:*\\n• {{ $json.Recommendation }}\"       }     },     {       \"type\": \"context\",       \"elements\": [         {           \"type\": \"mrkdwn\",           \"text\": \"📊 CPU: {{ $json.CPU }} | Memory: {{ $json.Memory }}\"         }       ]     }   ] }",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -1680,
+        240
+      ],
+      "id": "fc5c9aea-0708-4902-ba36-8c9183044c28",
+      "name": "Send a message1",
+      "webhookId": "9162fdba-a9d3-41a8-a69c-cb2a4b92940b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "HdwvC2JUmXMKGEkS",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Node: Webhook\nPurpose: Receive incoming incident alerts\n\nNode: Edit fields\nPurpose: Extract and format data for downstream nodes\n\nNode: Message a model\nPurpose: Analyze incident and provide recommendations\n\nNode: Append row in sheet\nPurpose: Create permanent record of incidents\n\nNode Type: Send a message (Gmail)\nPurpose: Email notification for all incidents\n\nNode Type: Send a message1 (Slack)\nPurpose: Instant team notification",
+        "height": 336,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2672,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "621e086c-232b-4cbe-a0b1-e5928f4813f2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "incident_id": "INC-2024-001",
+          "title": "High CPU Usage Detected",
+          "description": "Server CPU usage exceeded 90% threshold",
+          "severity": "high",
+          "affected_system": "web-server-01",
+          "timestamp": "2024-10-21T14:30:00Z",
+          "metrics": {
+            "cpu_usage": "95%",
+            "memory_usage": "78%"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b95f4086-2e18-4d9f-a952-9b4d8537b53c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4ae9e3f608de5e4f801f3582be1c4910302b0ff362b06cbfeee6f4f2294b61d"
+  },
+  "id": "U5DnGtsOeR1XLEnJ",
+  "tags": []
+}
